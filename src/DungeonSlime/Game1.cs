@@ -3,30 +3,33 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGameLibrary;
+using MonoGameLibrary.Graphics;
 using Color = Microsoft.Xna.Framework.Color;
-using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace DungeonSlime;
 
 public class Game1 : Core
 {
-    private Texture2D _logo;
+    private AnimatedSprite _slime;
+    private AnimatedSprite _bat;
     public Game1() : base("Dungeon Slime", 1280, 720, false)
     {
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _logo = Content.Load<Texture2D>("images/logo");
+        // Create the texture atlas from the XML configuration file
+        TextureAtlas atlas = TextureAtlas.FromFile(Content, "images/atlas-definition.xml");
 
-        base.LoadContent();
+        _slime = atlas.CreateAnimatedSprite("slime-animation");
+        _slime.Scale = new Vector2(4.0f, 4.0f);
+        _bat = atlas.CreateAnimatedSprite("bat-animation");
+        _bat.Scale = new Vector2(4.0f, 4.0f);
     }
 
     protected override void Update(GameTime gameTime)
@@ -34,7 +37,8 @@ public class Game1 : Core
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        // TODO: Add your update logic here
+        _slime.Update(gameTime);
+        _bat.Update(gameTime);
 
         base.Update(gameTime);
     }
@@ -43,48 +47,16 @@ public class Game1 : Core
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        // The bounds of the icon within the texture.
-        Rectangle iconSourceRect = new Rectangle(0, 0, 128, 128);
+        // Begin the sprite batch to prepare for rendering.
+        SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
-        // The bounds of the word mark within the texture.
-        Rectangle wordmarkSourceRect = new Rectangle(150, 34, 458, 58);
+        // Draw the slime texture region at a scale of 4.0
+        _slime.Draw(SpriteBatch, Vector2.Zero);
 
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront);
+        // Draw the bat texture region 10px to the right of the slime at a scale of 4.0
+        _bat.Draw(SpriteBatch, new Vector2(_slime.Width + 10, 0));
 
-        // Draw only the icon portion of the texture.
-        SpriteBatch.Draw(
-            _logo,              // texture
-            new Vector2(        // position
-                Window.ClientBounds.Width,
-                Window.ClientBounds.Height) * 0.5f,
-            iconSourceRect,     // sourceRectangle
-            Color.White,        // color
-            0.0f,               // rotation
-            new Vector2(        // origin
-                iconSourceRect.Width,
-                iconSourceRect.Height) * 0.5f,
-            1.0f,               // scale
-            SpriteEffects.None, // effects
-            1.0f                // layerDepth
-        );
-
-        // Draw only the word mark portion of the texture.
-        SpriteBatch.Draw(
-            _logo,              // texture
-            new Vector2(        // position
-              Window.ClientBounds.Width,
-              Window.ClientBounds.Height) * 0.5f,
-            wordmarkSourceRect, // sourceRectangle
-            Color.White,        // color
-            0.0f,               // rotation
-            new Vector2(        // origin
-              wordmarkSourceRect.Width,
-              wordmarkSourceRect.Height) * 0.5f,
-            1.0f,               // scale
-            SpriteEffects.None, // effects
-            0.0f                // layerDepth
-        );
-
+        // Always end the sprite batch when finished.
         SpriteBatch.End();
 
         base.Draw(gameTime);
