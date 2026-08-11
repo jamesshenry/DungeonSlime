@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 
 namespace MonoGameLibrary.Graphics;
 
-public readonly record struct Circle : IEquatable<Circle>
+public readonly record struct Circle
 {
     private static readonly Circle s_empty = new();
 
